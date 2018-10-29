@@ -1,0 +1,11 @@
+{
+  "name": "hex-session",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://bitbucket.org/snyder13/hex-session",
+  "author": "Steve Snyder <snyder13@purdue.edu>",
+  "license": "MIT",
+  "dependencies": {
+    "express-session": "^1.15.6"
+  }
+}
