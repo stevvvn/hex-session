@@ -3,17 +3,19 @@
 const session = require('express-session');
 
 module.exports = ({ app, conf, log }) => {
-	const
-		mw = conf.get('requiredMiddleware'),
-		storeName = mw['hex.redis'] ? 'redis-store' : mw['hex.pg'] ? 'pg-store' : 'mem-store';
-	let store = require(`${__dirname}/session/${storeName}`);
-	log.info(`\t\tstore: ${storeName}`);
-
-	if (store.attach) {
-		app.locals.sessionStore = store = store.attach({ app, conf, session });
-	}
-	else {
-		app.locals.sessionStore = store = new store(app);
+	const storeType = conf.get('session.store', 'memory');
+	const store = new (require(`${ __dirname }/../stores/${ storeType }`))(
+		app,
+		{
+			// interval to scan for stale sessions
+			'intervalSeconds': conf.get('session.reaper.intervalSeconds', 60 * 60),
+			// what's considered stale
+			'lingerSeconds': conf.get('session.repear.lingerSeconds', 60 * 60 * 12)
+		}
+	);
+	log.info(`\t\tstore: ${ storeType }`);
+	if (storeType === 'memory') {
+		log.warn('memory store for sessions is not suitable for production. define session.store to choose another');
 	}
 
 	app.use(session({
@@ -21,7 +23,7 @@ module.exports = ({ app, conf, log }) => {
 		'secret': conf.get('session.secret'),
 		'cookie': { 'path': '/' },
 		'resave': false,
-		'saveUninitialized': false,
+		'saveUninitialized': true,
 		'rolling': conf.get('session.rolling', false)
 	}));
 };
