@@ -1,6 +1,6 @@
 {
   "name": "hex-session",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "main": "index.js",
   "repository": "https://bitbucket.org/snyder13/hex-session",
   "author": "Steve Snyder <snyder13@purdue.edu>",
