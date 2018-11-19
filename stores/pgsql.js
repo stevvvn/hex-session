@@ -4,7 +4,7 @@ const Store = require('express-session/session/store');
 
 const reaper = (store, { intervalSeconds, lingerSeconds }) =>
 	setInterval(() =>
-		store.exec('session_reap', `DELETE FROM sessions WHERE extract(epoch from current_timestamp - freshness) > ${ lingerSeconds }`),
+		store.exec('session_reap', 'DELETE FROM sessions WHERE extract(epoch from current_timestamp - freshness) > $1', lingerSeconds),
 		intervalSeconds * 1000
 	);
 
