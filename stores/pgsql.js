@@ -23,12 +23,13 @@ class PgsqlStore extends Store
 		return this.app.locals.pgsql;
 	}
 
-	exec(name, sql, ...values) {
-		return this.dbh.query({
+	async exec(name, sql, ...values) {
+		const res = await this.dbh.query({
 			name,
 			values,
 			'text': sql
 		});
+		return res.rows ? res.rows[0] : res;
 	}
 
 	async get(id, cb) {
