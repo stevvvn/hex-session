@@ -32,22 +32,22 @@ class PgsqlStore extends Store
 	}
 
 	async get(id, cb) {
-		const sess = await this.exec('session_get', 'SELECT params FROM sessions WHERE id = ?', id);
+		const sess = await this.exec('session_get', 'SELECT params FROM sessions WHERE id = $1', id);
 		cb(null, sess ? JSON.parse(sess.params) : null);
 	}
 
 	async set(id, session, cb) {
-		await this.exec('session_set', 'INSERT INTO sessions(id, params) VALUES (? , ?)', id, JSON.stringify(session));
+		await this.exec('session_set', 'INSERT INTO sessions(id, params) VALUES ($1, $2)', id, JSON.stringify(session));
 		cb();
 	}
 
 	async destroy(id, cb) {
-		await this.exec('session_destroy', 'DELETE FROM sessions WHERE id = ?', id);
+		await this.exec('session_destroy', 'DELETE FROM sessions WHERE id = $1', id);
 		cb();
 	}
 
 	async touch(id, _session, cb) {
-		await this.exec('session_touch', 'UPDATE sessions SET freshness = CURRENT_TIMESTAMP WHERE id = ?', id);
+		await this.exec('session_touch', 'UPDATE sessions SET freshness = CURRENT_TIMESTAMP WHERE id = $1', id);
 		cb();
 	}
 }
