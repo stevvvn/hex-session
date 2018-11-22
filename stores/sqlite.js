@@ -36,7 +36,7 @@ class SqliteStore extends Store
 	}
 
 	async set(id, session, cb) {
-		await this.exec('run', 'INSERT INTO sessions(id, params) VALUES (? , ?)', id, JSON.stringify(session));
+		await this.exec('run', 'INSERT OR REPLACE INTO sessions(id, params) VALUES (? , ?)', id, JSON.stringify(session));
 		cb();
 	}
 
