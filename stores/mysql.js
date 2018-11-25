@@ -8,7 +8,7 @@ const reaper = (store, { intervalSeconds, lingerSeconds }) =>
 		intervalSeconds * 1000
 	);
 
-class mysqlStore extends Store
+class MysqlStore extends Store
 {
 	constructor(app, reapOpts) {
 		super();
@@ -30,11 +30,12 @@ class mysqlStore extends Store
 
 	async get(id, cb) {
 		const res = await this.exec('SELECT params FROM sessions WHERE id = ?', id);
-		cb(null, res[0] ? JSON.parse(res[0].params) : null);
+		cb(null, res ? JSON.parse(res.params) : null);
 	}
 
 	async set(id, session, cb) {
-		await this.exec('INSERT INTO sessions(id, params) VALUES (?, ?)', id, JSON.stringify(session));
+		const sessStr = JSON.stringify(session);
+		await this.exec('INSERT INTO sessions(id, params) VALUES (?, ?) ON DUPLICATE KEY UPDATE params = ?', id, sessStr, sessStr);
 		cb();
 	}
 
@@ -49,4 +50,4 @@ class mysqlStore extends Store
 	}
 }
 
-module.exports = mysqlStore;
+module.exports = MysqlStore;
