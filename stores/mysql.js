@@ -25,7 +25,7 @@ class MysqlStore extends Store
 
 	async exec(sql, ...values) {
 		const res = await this.dbh.query(sql, values);
-		return res[0] ? res[0] : res;
+		return res[0] ? res[0] : res.length === 0 ? null : res;
 	}
 
 	async get(id, cb) {

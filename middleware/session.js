@@ -1,5 +1,4 @@
 'use strict';
-// @flow
 const session = require('express-session');
 
 module.exports = ({ app, conf, log }) => {
