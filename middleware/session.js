@@ -19,6 +19,7 @@ module.exports = ({ app, conf, log }) => {
 
 	app.use(session({
 		store,
+		'name': conf.get('session.cookieName', 'connect.sid'),
 		'secret': conf.get('session.secret'),
 		'cookie': { 'path': '/' },
 		'resave': false,
