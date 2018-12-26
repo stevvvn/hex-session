@@ -2,25 +2,18 @@
 
 const Store = require('express-session/session/store');
 
-const reaper = (store, { intervalSeconds, lingerSeconds }) =>
-	setInterval(() =>
-		store.exec('session_reap', 'DELETE FROM sessions WHERE extract(epoch from current_timestamp - freshness) > $1', lingerSeconds),
-		intervalSeconds * 1000
-	);
-
 class PgsqlStore extends Store
 {
-	constructor(app, reapOpts) {
+	constructor(dbh, reapOpts) {
 		super();
-		this.app = app;
-		reaper(this, reapOpts);
+		this.dbh = dbh;
 	}
 
-	get dbh() {
-		if (!this.app.locals.pgsql) {
-			throw new Error('you must depend on the hex-db-pqsql.handle middleware to use the pgsql session connector');
-		}
-		return this.app.locals.pgsql;
+	reap({ intervalSeconds, lingerSeconds }) {
+		setInterval(() =>
+			this.exec('session_reap', 'DELETE FROM sessions WHERE extract(epoch from current_timestamp - freshness) > $1', lingerSeconds),
+			intervalSeconds * 1000
+		);
 	}
 
 	async exec(name, sql, ...values) {
@@ -53,4 +46,5 @@ class PgsqlStore extends Store
 	}
 }
 
-module.exports = PgsqlStore;
+module.exports = ({ app }) =>
+	app.locals.sessionStore = new PgsqlStore(app.locals.pgsql);

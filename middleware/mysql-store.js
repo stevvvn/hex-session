@@ -1,26 +1,18 @@
 'use strict';
-
 const Store = require('express-session/session/store');
-
-const reaper = (store, { intervalSeconds, lingerSeconds }) =>
-	setInterval(() =>
-		store.exec('DELETE FROM sessions WHERE CURRENT_TIMESTAMP - freshness > ?', lingerSeconds),
-		intervalSeconds * 1000
-	);
 
 class MysqlStore extends Store
 {
-	constructor(app, reapOpts) {
+	constructor(dbh, reapOpts) {
 		super();
-		this.app = app;
-		reaper(this, reapOpts);
+		this.dbh = dbh;
 	}
-
-	get dbh() {
-		if (!this.app.locals.mysql) {
-			throw new Error('you must depend on the hex-db-pqsql.handle middleware to use the mysql session connector');
-		}
-		return this.app.locals.mysql;
+	
+	reap({ intervalSeconds, lingerSeconds }) {
+		setInterval(() =>
+			this.exec('DELETE FROM sessions WHERE CURRENT_TIMESTAMP - freshness > ?', lingerSeconds),
+			intervalSeconds * 1000
+		);
 	}
 
 	async exec(sql, ...values) {
@@ -50,4 +42,5 @@ class MysqlStore extends Store
 	}
 }
 
-module.exports = MysqlStore;
+module.exports = ({ app }) => 
+	app.locals.sessionStore = new MysqlStore(app.locals.mysql);

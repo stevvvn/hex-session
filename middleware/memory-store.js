@@ -30,7 +30,10 @@ var defer = typeof setImmediate === 'function'
  * Module exports.
  */
 
-module.exports = MemoryStore
+module.exports = ({ app, log }) => {
+	log.warn('memory session storage is not suitable for production (data lost on restart, concurrency issues)');
+	app.locals.sessionStore = new MemoryStore;
+};
 
 /**
  * A session store in memory.

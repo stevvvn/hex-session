@@ -2,25 +2,19 @@
 
 const Store = require('express-session/session/store');
 
-const reaper = (store, { intervalSeconds, lingerSeconds }) =>
-	setInterval(() =>
-		store.exec('run', 'DELETE FROM sessions WHERE (JulianDay() - JulianDay(freshness)) * 24 * 60 * 60 > ?', lingerSeconds),
-		intervalSeconds * 1000
-	);
 
 class SqliteStore extends Store
 {
-	constructor(app, reapOpts) {
+	constructor(dbh) {
 		super();
-		this.app = app;
-		reaper(this, reapOpts);
+		this.dbh = dbh;
 	}
 
-	get dbh() {
-		if (!this.app.locals.sqlite) {
-			throw new Error('you must depend on the hex-db-sqlite.handle middleware to use the sqlite session connector');
-		}
-		return this.app.locals.sqlite;
+	reap({ intervalSeconds, lingerSeconds }) {
+		setInterval(() =>
+			this.exec('run', 'DELETE FROM sessions WHERE (JulianDay() - JulianDay(freshness)) * 24 * 60 * 60 > ?', lingerSeconds),
+			intervalSeconds * 1000
+		);
 	}
 
 	async exec(type, sql, ...params) {
@@ -51,4 +45,7 @@ class SqliteStore extends Store
 	}
 }
 
-module.exports = SqliteStore;
+module.exports = ({ app, log }) => {
+	log.warn('beware concurrency issues with sqlite session storage');
+	app.locals.sessionStore = new SqliteStore(app.locals.sqlite);
+};
