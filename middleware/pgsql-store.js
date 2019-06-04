@@ -31,7 +31,8 @@ class PgsqlStore extends Store
 	}
 
 	async set(id, session, cb) {
-		await this.exec('session_set', 'INSERT INTO sessions(id, params) VALUES ($1, $2)', id, JSON.stringify(session));
+		const json = JSON.stringify(session);
+		await this.exec('session_set', 'INSERT INTO sessions(id, params) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET params = $2', id, json);
 		cb();
 	}
 
